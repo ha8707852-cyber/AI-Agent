@@ -1,12 +1,102 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Agent Control Centre</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Control Centre</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#e8edf7;font-family:Arial,sans-serif}
+.sidebar{position:fixed;width:230px;height:100vh;background:#111a2d;padding:28px 18px;border-right:1px solid #263149}
+.logo{font-size:19px;font-weight:700;margin-bottom:45px}
+.logo span{color:#62a5ff}
+.nav{display:block;padding:13px;margin:8px 0;border-radius:9px;color:#aab6cc;text-decoration:none;cursor:pointer}
+.nav.active,.nav:hover{background:#203454;color:white}
+.main{margin-left:230px;padding:35px;max-width:1450px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
+h1{font-size:27px;margin:0 0 8px}
+.sub{color:#8998b3;font-size:14px}
+.status{background:#153c32;color:#66e0a4;padding:9px 14px;border-radius:20px;font-size:12px}
+.section{margin-bottom:30px}
+.section h2{font-size:18px;margin-bottom:17px}
+.agents{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.card{background:#141e32;border:1px solid #26334d;border-radius:13px;padding:20px}
+.agent-icon{font-size:25px;margin-bottom:15px}
+.card h3{font-size:16px;margin:0 0 8px}
+.card p{font-size:13px;color:#91a0ba;margin:0 0 17px}
+.tag{font-size:11px;color:#65dba2}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.stat-number{font-size:27px;font-weight:700;margin-bottom:7px}
+.stat-label{font-size:13px;color:#91a0ba}
+.memory{line-height:1.8;color:#b6c2d6;font-size:14px}
+button{background:#3479dc;border:0;color:white;padding:11px 16px;border-radius:8px;cursor:pointer}
+button:hover{background:#2465c2}
+@media(max-width:800px){
+.sidebar{position:relative;width:100%;height:auto;padding:15px}
+.logo{margin:0 0 12px}
+nav{display:flex;gap:5px}
+.nav{margin:0;padding:10px;font-size:12px}
+.main{margin:0;padding:20px}
+.agents{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+.agents,.stats{grid-template-columns:1fr}
+.header{align-items:flex-start;gap:12px;flex-direction:column}
+}
+</style>
 </head>
 <body>
-  <h1>AI Agent Control Centre</h1>
-  <p>Your AI Workforce is coming soon.</p>
+<aside class="sidebar">
+<div class="logo">✦ AI <span>WORKFORCE</span></div>
+<nav>
+<a class="nav active" href="#team">◈ AI Team</a>
+<a class="nav" href="#tasks">▤ Task Centre</a>
+<a class="nav" href="#memory">◉ AI Memory</a>
+</nav>
+</aside>
+
+<main class="main">
+<header class="header">
+<div>
+<h1>AI Agent Control Centre</h1>
+<div class="sub">Your central workspace for managing five AI agents.</div>
+</div>
+<div class="status">● SYSTEM READY</div>
+</header>
+
+<section class="section" id="team">
+<h2>◈ Your AI Team</h2>
+<div class="agents">
+<div class="card"><div class="agent-icon">🧠</div><h3>AI Manager</h3><p>Coordinates tasks and manages your AI team.</p><span class="tag">● Team Leader</span></div>
+<div class="card"><div class="agent-icon">💬</div><h3>Customer Service</h3><p>Customer enquiries, replies and support.</p><span class="tag">● Specialist Agent</span></div>
+<div class="card"><div class="agent-icon">📢</div><h3>Marketing</h3><p>Campaigns, promotions and content creation.</p><span class="tag">● Specialist Agent</span></div>
+<div class="card"><div class="agent-icon">💻</div><h3>IT Coding</h3><p>Website development, coding and debugging.</p><span class="tag">● Specialist Agent</span></div>
+<div class="card"><div class="agent-icon">⚙️</div><h3>Operations</h3><p>Reports, SOPs and business processes.</p><span class="tag">● Specialist Agent</span></div>
+</div>
+</section>
+
+<section class="section" id="tasks">
+<h2>▤ Task Centre</h2>
+<div class="stats">
+<div class="card"><div class="stat-number">0</div><div class="stat-label">Active Tasks</div></div>
+<div class="card"><div class="stat-number">0</div><div class="stat-label">Completed Tasks</div></div>
+<div class="card"><div class="stat-number">0</div><div class="stat-label">Pending Approval</div></div>
+</div>
+</section>
+
+<section class="section" id="memory">
+<h2>◉ AI Memory</h2>
+<div class="card memory">
+<strong>Shared Knowledge & Learning</strong><br>
+Your AI team will build shared knowledge as they work.<br>
+• User preferences and corrections<br>
+• Approved business information<br>
+• Agent-specific lessons<br>
+• Pending knowledge approvals<br>
+<br><span class="tag">Memory system — setup pending</span>
+</div>
+</section>
+</main>
 </body>
 </html>

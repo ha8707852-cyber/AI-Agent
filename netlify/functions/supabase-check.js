@@ -6,16 +6,13 @@ exports.handler = async () => {
   if (!url || !key) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        status: "error",
-        message: "Supabase environment variables are missing"
-      })
+      body: JSON.stringify({ error: "Missing environment variables" })
     };
   }
 
   try {
     const response = await fetch(
-      `${url}/rest/v1/tasks?select=id&limit=1`,
+      `${url.replace(/\/$/, "")}/rest/v1/tasks?select=id&limit=1`,
       {
         headers: {
           apikey: key,
@@ -24,24 +21,19 @@ exports.handler = async () => {
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`Supabase returned HTTP ${response.status}`);
-    }
+    const details = await response.text();
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        status: "connected",
-        message: "Netlify can reach Supabase successfully"
+        http_status: response.status,
+        response: details
       })
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        status: "error",
-        message: error.message
-      })
+      body: JSON.stringify({ error: error.message })
     };
   }
 };

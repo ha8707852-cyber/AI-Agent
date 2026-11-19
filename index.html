@@ -3,149 +3,359 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Agent Control Centre</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b1020;color:#e8edf7;font-family:Arial,sans-serif}
-.sidebar{position:fixed;width:230px;height:100vh;background:#111a2d;padding:28px 18px;border-right:1px solid #263149}
-.logo{font-size:19px;font-weight:700;margin-bottom:45px}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;border:0;border-radius:8px;padding:11px 16px;background:#3479dc;color:white}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea,select{width:100%;padding:12px;background:#0b1020;color:white;border:1px solid #34435e;border-radius:8px}
+label{display:block;font-size:13px;color:#aab6cc;margin:13px 0 7px}
+.login{max-width:400px;margin:12vh auto;padding:30px;background:#141e32;border:1px solid #26334d;border-radius:15px}
+.login h1{font-size:23px}
+.muted{color:#91a0ba;font-size:13px}
+#app{display:none}
+.sidebar{position:fixed;width:230px;height:100vh;background:#111a2d;padding:25px 17px;border-right:1px solid #263149}
+.logo{font-size:19px;font-weight:bold;margin-bottom:40px}
 .logo span{color:#62a5ff}
-.nav{display:block;padding:13px;margin:8px 0;border-radius:9px;color:#aab6cc;text-decoration:none;cursor:pointer}
-.nav.active,.nav:hover{background:#203454;color:white}
-.main{margin-left:230px;padding:35px;max-width:1450px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
-h1{font-size:27px;margin:0 0 8px}
-.sub{color:#8998b3;font-size:14px}
-.status{background:#153c32;color:#66e0a4;padding:9px 14px;border-radius:20px;font-size:12px}
-.section{margin-bottom:30px}
-.section h2{font-size:18px;margin-bottom:17px}
-.agents{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.card{background:#141e32;border:1px solid #26334d;border-radius:13px;padding:20px}
-.agent-icon{font-size:25px;margin-bottom:15px}
+.nav{display:block;padding:13px;margin:8px 0;border-radius:9px;color:#aab6cc;text-decoration:none}
+.nav:hover,.nav.active{background:#203454;color:white}
+.main{margin-left:230px;padding:32px;max-width:1500px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:30px}
+h1{font-size:26px;margin:0 0 8px}
+h2{font-size:18px;margin:0 0 16px}
+.section{margin-bottom:30px;scroll-margin-top:20px}
+.agents,.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{background:#141e32;border:1px solid #26334d;border-radius:13px;padding:19px}
+.agent-icon{font-size:25px;margin-bottom:12px}
 .card h3{font-size:16px;margin:0 0 8px}
-.card p{font-size:13px;color:#91a0ba;margin:0 0 17px}
+.card p{font-size:13px;color:#91a0ba}
 .tag{font-size:11px;color:#65dba2}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.stat-number{font-size:27px;font-weight:700;margin-bottom:7px}
+.stat-number{font-size:27px;font-weight:bold;margin-bottom:7px}
 .stat-label{font-size:13px;color:#91a0ba}
-.memory{line-height:1.8;color:#b6c2d6;font-size:14px}
-button{background:#3479dc;border:0;color:white;padding:11px 16px;border-radius:8px;cursor:pointer}
-button:hover{background:#2465c2}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.task{display:flex;justify-content:space-between;gap:15px;align-items:center;border-bottom:1px solid #26334d;padding:14px 0}
+.task:last-child{border:0}
+.task small{display:block;color:#91a0ba;margin-top:6px}
+.pill{font-size:11px;color:#8fc2ff;background:#203454;padding:5px 9px;border-radius:20px}
+.actions{display:flex;gap:8px;align-items:center}
+.secondary{background:#293750}
+.danger{background:#753d49}
+.message{font-size:13px;margin-top:12px;color:#65dba2}
+.error{color:#ff9292}
+.memory-item{padding:13px 0;border-bottom:1px solid #26334d}
+.memory-item:last-child{border:0}
+.top-mobile{display:none}
 @media(max-width:800px){
 .sidebar{position:relative;width:100%;height:auto;padding:15px}
 .logo{margin:0 0 12px}
-nav{display:flex;gap:5px}
+.sidebar nav{display:flex;gap:5px;flex-wrap:wrap}
 .nav{margin:0;padding:10px;font-size:12px}
-.main{margin:0;padding:20px}
-.agents{grid-template-columns:repeat(2,1fr)}
+.main{margin:0;padding:19px}
+.agents,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(max-width:500px){
-.agents,.stats{grid-template-columns:1fr}
-.header{align-items:flex-start;gap:12px;flex-direction:column}
+@media(max-width:520px){
+.agents,.stats,.form-grid{grid-template-columns:1fr}
+.full{grid-column:auto}
+.header{align-items:flex-start;flex-direction:column}
+.task{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
 <body>
+
+<div id="login" class="login">
+  <div class="logo">✦ AI <span>WORKFORCE</span></div>
+  <h1>Welcome back</h1>
+  <p class="muted">Sign in to your private AI Control Centre.</p>
+  <form id="loginForm">
+    <label>Email</label>
+    <input id="email" type="email" required autocomplete="username">
+    <label>Password</label>
+    <input id="password" type="password" required autocomplete="current-password">
+    <button style="width:100%;margin-top:18px">Sign in</button>
+    <p id="loginMessage" class="message"></p>
+  </form>
+</div>
+
+<div id="app">
 <aside class="sidebar">
-<div class="logo">✦ AI <span>WORKFORCE</span></div>
-<nav>
-<a class="nav active" href="#team">◈ AI Team</a>
-<a class="nav" href="#tasks">▤ Task Centre</a>
-<a class="nav" href="#memory">◉ AI Memory</a>
-</nav>
+  <div class="logo">✦ AI <span>WORKFORCE</span></div>
+  <nav>
+    <a class="nav active" href="#team">◈ AI Team</a>
+    <a class="nav" href="#tasks">▤ Task Centre</a>
+    <a class="nav" href="#memory">◉ AI Memory</a>
+  </nav>
+  <button class="secondary" id="logout" style="width:100%;margin-top:25px">Sign out</button>
 </aside>
 
 <main class="main">
 <header class="header">
-<div>
-<h1>AI Agent Control Centre</h1>
-<div class="sub">Your central workspace for managing five AI agents.</div>
-</div>
-<div class="status">● SYSTEM READY</div>
+  <div>
+    <h1>AI Agent Control Centre</h1>
+    <div class="muted">Your central workspace for managing five AI agents.</div>
+  </div>
+  <span class="pill">● PRIVATE WORKSPACE</span>
 </header>
 
 <section class="section" id="team">
 <h2>◈ Your AI Team</h2>
 <div class="agents">
-<div class="card"><div class="agent-icon">🧠</div><h3>AI Manager</h3><p>Coordinates tasks and manages your AI team.</p><span class="tag">● Team Leader</span></div>
-<div class="card"><div class="agent-icon">💬</div><h3>Customer Service</h3><p>Customer enquiries, replies and support.</p><span class="tag">● Specialist Agent</span></div>
-<div class="card"><div class="agent-icon">📢</div><h3>Marketing</h3><p>Campaigns, promotions and content creation.</p><span class="tag">● Specialist Agent</span></div>
-<div class="card"><div class="agent-icon">💻</div><h3>IT Coding</h3><p>Website development, coding and debugging.</p><span class="tag">● Specialist Agent</span></div>
-<div class="card"><div class="agent-icon">⚙️</div><h3>Operations</h3><p>Reports, SOPs and business processes.</p><span class="tag">● Specialist Agent</span></div>
+  <div class="card"><div class="agent-icon">🧠</div><h3>AI Manager</h3><p>Coordinates tasks and manages your AI team.</p><span class="tag">● Team Leader</span></div>
+  <div class="card"><div class="agent-icon">💬</div><h3>Customer Service</h3><p>Customer enquiries, replies and support.</p><span class="tag">● Specialist Agent</span></div>
+  <div class="card"><div class="agent-icon">📢</div><h3>Marketing</h3><p>Campaigns, promotions and content creation.</p><span class="tag">● Specialist Agent</span></div>
+  <div class="card"><div class="agent-icon">💻</div><h3>IT Coding</h3><p>Website development, coding and debugging.</p><span class="tag">● Specialist Agent</span></div>
+  <div class="card"><div class="agent-icon">⚙️</div><h3>Operations</h3><p>Reports, SOPs and business processes.</p><span class="tag">● Specialist Agent</span></div>
 </div>
 </section>
 
-
 <section class="section" id="tasks">
-  <h2>▤ Task Centre</h2>
+<h2>▤ Task Centre</h2>
+<div class="card">
+  <h3>Create a new task</h3>
+  <form id="taskForm">
+    <div class="form-grid">
+      <div class="full">
+        <label>Task title</label>
+        <input id="taskTitle" maxlength="180" required placeholder="What needs to be done?">
+      </div>
+      <div class="full">
+        <label>Description</label>
+        <textarea id="taskDescription" rows="3" placeholder="Describe the task..."></textarea>
+      </div>
+      <div>
+        <label>Assign to</label>
+        <select id="taskAgent">
+          <option>Manager</option>
+          <option>Customer Service</option>
+          <option>Marketing</option>
+          <option>IT Coding</option>
+          <option>Operations</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:end">
+        <button id="createButton" style="width:100%">Create task</button>
+      </div>
+    </div>
+    <p id="taskMessage" class="message"></p>
+  </form>
+</div>
 
-  <div class="card">
-    <h3>Create New Task</h3>
-    <form id="taskForm">
-      <input id="taskTitle" placeholder="Enter task title" required
-        style="width:100%;padding:12px;margin:12px 0;border-radius:7px;border:1px solid #34435e;background:#0b1020;color:white">
+<div class="stats" style="margin-top:15px">
+  <div class="card"><div class="stat-number" id="activeCount">0</div><div class="stat-label">Active Tasks</div></div>
+  <div class="card"><div class="stat-number" id="completedCount">0</div><div class="stat-label">Completed Tasks</div></div>
+  <div class="card"><div class="stat-number" id="pendingCount">0</div><div class="stat-label">Pending Approval</div></div>
+</div>
 
-      <textarea id="taskDescription" placeholder="Describe what needs to be done"
-        style="width:100%;height:100px;padding:12px;margin-bottom:12px;border-radius:7px;border:1px solid #34435e;background:#0b1020;color:white"></textarea>
-
-      <select id="taskAgent" required
-        style="width:100%;padding:12px;margin-bottom:15px;border-radius:7px;background:#0b1020;color:white">
-        <option value="">Select AI Agent</option>
-        <option>Manager</option>
-        <option>Customer Service</option>
-        <option>Marketing</option>
-        <option>IT Coding</option>
-        <option>Operations</option>
-      </select>
-
-      <button type="submit" id="submitTask">Create Task</button>
-      <p id="taskMessage" class="sub"></p>
-    </form>
+<div class="card" style="margin-top:15px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+    <h3>Recent tasks</h3>
+    <button class="secondary" id="refreshTasks">Refresh</button>
   </div>
-
-  <div class="stats" style="margin-top:15px">
-    <div class="card"><div class="stat-number" id="activeTasks">0</div><div class="stat-label">Active Tasks</div></div>
-    <div class="card"><div class="stat-number" id="completedTasks">0</div><div class="stat-label">Completed Tasks</div></div>
-    <div class="card"><div class="stat-number" id="pendingTasks">0</div><div class="stat-label">Pending Approval</div></div>
-  </div>
+  <div id="taskList" class="muted">Loading tasks...</div>
+</div>
 </section>
 
+<section class="section" id="memory">
+<h2>◉ AI Memory</h2>
+<div class="card">
+  <h3>Shared knowledge</h3>
+  <p class="muted">Approved knowledge available to your AI team.</p>
+  <div id="knowledgeList" class="muted">Loading knowledge...</div>
+</div>
+<div class="card" style="margin-top:14px">
+  <h3>Agent lessons</h3>
+  <div id="agentMemoryList" class="muted">Loading agent memory...</div>
+</div>
+</section>
+</main>
+</div>
+
 <script>
-document.getElementById("taskForm").addEventListener("submit", async function(e) {
+const SUPABASE_URL = "https://afimhxmqmvazfyriruqt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_0GR1TOonYmrMvpZz1sIlZg_9fed7XjA";
+
+const client = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const $ = id => document.getElementById(id);
+
+function showMessage(id, text, isError=false) {
+  $(id).textContent = text;
+  $(id).className = isError ? "message error" : "message";
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+async function showApp(session) {
+  $("login").style.display = "none";
+  $("app").style.display = "block";
+  await Promise.all([loadTasks(), loadMemory()]);
+}
+
+async function showLogin() {
+  $("app").style.display = "none";
+  $("login").style.display = "block";
+}
+
+$("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
-
-  const button = document.getElementById("submitTask");
-  const message = document.getElementById("taskMessage");
-
-  button.disabled = true;
-  message.textContent = "Creating task...";
-
-  try {
-    const response = await fetch("/.netlify/functions/create-task", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: document.getElementById("taskTitle").value,
-        description: document.getElementById("taskDescription").value,
-        assigned_agent: document.getElementById("taskAgent").value
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) throw new Error(result.error || "Task creation failed");
-
-    message.textContent = "Task created successfully!";
-    document.getElementById("taskForm").reset();
-  } catch (error) {
-    message.textContent = "Error: " + error.message;
-  } finally {
-    button.disabled = false;
+  showMessage("loginMessage","Signing in...");
+  const {error} = await client.auth.signInWithPassword({
+    email:$("email").value.trim(),
+    password:$("password").value
+  });
+  if (error) {
+    showMessage("loginMessage",error.message,true);
+  } else {
+    showMessage("loginMessage","Signed in.");
   }
 });
-</script>
 
-</main>
+$("logout").addEventListener("click", async () => {
+  await client.auth.signOut();
+});
+
+client.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    await showApp(session);
+  } else {
+    await showLogin();
+  }
+});
+
+async function loadTasks() {
+  $("taskList").textContent = "Loading tasks...";
+  const {data,error} = await client
+    .from("tasks")
+    .select("id,title,description,assigned_agent,status,created_at")
+    .order("created_at",{ascending:false})
+    .limit(50);
+
+  if (error) {
+    $("taskList").textContent = "Unable to load tasks: " + error.message;
+    return;
+  }
+
+  const tasks = data || [];
+  $("activeCount").textContent = tasks.filter(t =>
+    ["pending","in_progress","running"].includes(t.status)
+  ).length;
+  $("completedCount").textContent = tasks.filter(t =>
+    t.status === "completed"
+  ).length;
+  $("pendingCount").textContent = tasks.filter(t =>
+    t.status === "waiting_approval"
+  ).length;
+
+  if (!tasks.length) {
+    $("taskList").textContent = "No tasks yet. Create your first task above.";
+    return;
+  }
+
+  $("taskList").innerHTML = tasks.map(t => `
+    <div class="task">
+      <div>
+        <strong>${escapeHTML(t.title)}</strong>
+        <small>${escapeHTML(t.assigned_agent)} · ${escapeHTML(t.status)}</small>
+        <small>${escapeHTML(t.description || "")}</small>
+      </div>
+      <div class="actions">
+        <span class="pill">${escapeHTML(t.status)}</span>
+        <select aria-label="Update task status" data-task="${escapeHTML(t.id)}" style="width:auto">
+          ${["pending","in_progress","completed","waiting_approval","failed"].map(s =>
+            `<option value="${s}" ${s===t.status?"selected":""}>${s.replace("_"," ")}</option>`
+          ).join("")}
+        </select>
+      </div>
+    </div>
+  `).join("");
+
+  $("taskList").querySelectorAll("select[data-task]").forEach(select => {
+    select.addEventListener("change", async () => {
+      const {error} = await client.from("tasks")
+        .update({status:select.value,updated_at:new Date().toISOString()})
+        .eq("id",select.dataset.task);
+      if (error) alert("Could not update task: " + error.message);
+      await loadTasks();
+    });
+  });
+}
+
+$("taskForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("createButton").disabled = true;
+  showMessage("taskMessage","Saving task...");
+
+  const {data,error} = await client.from("tasks").insert({
+    title:$("taskTitle").value.trim(),
+    description:$("taskDescription").value.trim(),
+    assigned_agent:$("taskAgent").value,
+    status:"pending"
+  }).select().single();
+
+  $("createButton").disabled = false;
+
+  if (error) {
+    showMessage("taskMessage",error.message,true);
+    return;
+  }
+
+  $("taskForm").reset();
+  showMessage("taskMessage","Task saved successfully.");
+  await loadTasks();
+});
+
+$("refreshTasks").addEventListener("click",loadTasks);
+
+async function loadMemory() {
+  const {data:knowledge,error:kError} = await client
+    .from("shared_knowledge")
+    .select("id,title,content,category")
+    .eq("approval_status","approved")
+    .order("created_at",{ascending:false})
+    .limit(20);
+
+  $("knowledgeList").innerHTML = kError
+    ? escapeHTML(kError.message)
+    : (knowledge.length ? knowledge.map(item => `
+      <div class="memory-item">
+        <strong>${escapeHTML(item.title)}</strong>
+        <div class="muted">${escapeHTML(item.category || "General")}</div>
+        <p>${escapeHTML(item.content)}</p>
+      </div>`).join("") : "No approved shared knowledge yet.");
+
+  const {data:memories,error:mError} = await client
+    .from("agent_memory")
+    .select("id,agent_name,memory,memory_type")
+    .order("created_at",{ascending:false})
+    .limit(20);
+
+  $("agentMemoryList").innerHTML = mError
+    ? escapeHTML(mError.message)
+    : (memories.length ? memories.map(item => `
+      <div class="memory-item">
+        <strong>${escapeHTML(item.agent_name)}</strong>
+        <div class="muted">${escapeHTML(item.memory_type)}</div>
+        <p>${escapeHTML(item.memory)}</p>
+      </div>`).join("") : "No agent lessons saved yet.");
+}
+
+(async function init() {
+  const {data:{session}} = await client.auth.getSession();
+  if (session) await showApp(session);
+  else await showLogin();
+})();
+</script>
 </body>
 </html>

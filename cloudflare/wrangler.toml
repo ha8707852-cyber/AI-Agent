@@ -10,7 +10,7 @@ database_id = "66280dfe-1d50-4557-a9ee-c07d3889dc12"
 migrations_dir = "migrations"
 
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["* * * * *"]
 
 [vars]
 GROQ_MODEL = "openai/gpt-oss-120b"

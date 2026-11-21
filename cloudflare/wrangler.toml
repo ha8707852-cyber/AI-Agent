@@ -1,0 +1,17 @@
+name = "ai-workforce-control"
+main = "worker-bundle.js"
+compatibility_date = "2026-11-21"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-workforce-db"
+database_id = "66280dfe-1d50-4557-a9ee-c07d3889dc12"
+migrations_dir = "migrations"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+GROQ_MODEL = "openai/gpt-oss-120b"
+WORKFORCE_TIMEZONE = "Asia/Kuala_Lumpur"
